@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedStreamMem & KGARevion Dashboard</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg">
+      <div>
+        <h1 class="text-2xl font-bold text-teal-400 flex items-center gap-2">
+          <span>🧠 MedStreamMem & KGARevion Dashboard</span>
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">
+          Domain-Weighted Fusion Bounded Memory Telemetry & Ollama Model Inference Explorer
+        </p>
+      </div>
+      <div class="mt-4 md:mt-0 flex gap-3">
+        <button onclick="loadTelemetry()" class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg text-sm transition">
+          🔄 Refresh Snapshot
+        </button>
+      </div>
+    </header>
+
+    <!-- Formula Reference Banner -->
+    <div class="bg-gradient-to-r from-slate-800 to-teal-950 border border-teal-800/50 rounded-xl p-5 shadow">
+      <h2 class="text-xs uppercase tracking-wider font-semibold text-teal-400">Option B: Domain-Weighted Fusion Bounded Memory Formula</h2>
+      <div class="mt-2 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="text-xl font-mono text-amber-300 bg-slate-900/80 px-4 py-2 rounded-lg border border-amber-500/30">
+          Priority Score = ( &phi;<sub>hits</sub> &times; &tau;<sub>trust</sub> ) / ( &Delta;t<sub>last_accessed</sub> + 1.0 )
+        </div>
+        <div class="text-xs text-slate-300 space-y-1">
+          <div><b class="text-teal-300">&phi;<sub>hits</sub> (Frequency):</b> Keeps popular clinical answers ready.</div>
+          <div><b class="text-amber-300">&tau;<sub>trust</sub> (Authority):</b> High-tier guidelines (e.g. WHO/PubMed @ 0.95) resist eviction.</div>
+          <div><b class="text-sky-300">&Delta;t (Recency):</b> Prevents stale spikes from hogging memory buffer.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Bounded Memory Buffer View -->
+      <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-md flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-slate-100 flex items-center gap-2">
+            <span>💾 Active Bounded Memory Buffer</span>
+            <span id="capacity-badge" class="text-xs bg-slate-700 text-teal-300 px-2.5 py-1 rounded-full border border-slate-600">0 / 50</span>
+          </h2>
+        </div>
+        
+        <div class="overflow-x-auto flex-1">
+          <table class="w-full text-left text-sm text-slate-300 border-collapse">
+            <thead class="text-xs uppercase bg-slate-900/80 text-slate-400 border-b border-slate-700">
+              <tr>
+                <th class="p-3">Rank</th>
+                <th class="p-3">Memory Key / Query</th>
+                <th class="p-3 text-center">&phi;<sub>hits</sub></th>
+                <th class="p-3 text-center">&tau;<sub>trust</sub></th>
+                <th class="p-3 text-center">&Delta;t</th>
+                <th class="p-3 text-right">Priority Score</th>
+              </tr>
+            </thead>
+            <tbody id="memory-table-body" class="divide-y divide-slate-700/50">
+              <tr>
+                <td colspan="6" class="p-8 text-center text-slate-500 italic">No snapshot loaded. Run KGARevion to generate memory data.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Eviction Log & Telemetry Panel -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-md flex flex-col">
+        <h2 class="text-lg font-semibold text-slate-100 mb-4 flex items-center gap-2">
+          <span>🚨 Eviction History Log</span>
+        </h2>
+        
+        <div id="eviction-container" class="space-y-3 overflow-y-auto max-h-96 pr-1 text-xs">
+          <div class="p-4 bg-slate-900/50 border border-slate-700/50 rounded-lg text-slate-500 text-center">
+            No evictions recorded yet. Evictions occur when buffer exceeds capacity.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- JSON File Loader & Recent Queries Explorer -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-md">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-100">📊 Run Results & Query Explorer</h2>
+          <p class="text-xs text-slate-400">Upload or inspect stored `results/run_*.json` output files</p>
+        </div>
+        <input type="file" id="json-file-input" accept=".json" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-700 file:text-white hover:file:bg-teal-600 cursor-pointer">
+      </div>
+
+      <div id="run-summary-card" class="hidden bg-slate-900/80 border border-slate-700 p-4 rounded-xl mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div>
+          <div class="text-xs text-slate-400">Dataset</div>
+          <div id="summary-dataset" class="font-bold text-teal-400 text-sm mt-1">-</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">LLM Model</div>
+          <div id="summary-model" class="font-bold text-amber-300 text-sm mt-1">-</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Accuracy</div>
+          <div id="summary-accuracy" class="font-bold text-emerald-400 text-sm mt-1">-</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Total Samples</div>
+          <div id="summary-samples" class="font-bold text-sky-400 text-sm mt-1">-</div>
+        </div>
+      </div>
+
+      <div id="queries-container" class="space-y-3 max-h-96 overflow-y-auto">
+        <div class="text-slate-500 text-xs text-center py-6">Select a JSON run output file above to explore query-by-query triplets, review scores, and LLM answers.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    async function loadTelemetry() {
+      try {
+        const res = await fetch("../results/memory_snapshot.json");
+        if (!res.ok) throw new Error("Snapshot file not found");
+        const data = await res.json();
+        renderMemory(data);
+      } catch (err) {
+        console.warn("Could not auto-fetch results/memory_snapshot.json:", err);
+      }
+    }
+
+    function renderMemory(data) {
+      const currentStep = data.current_step || 0;
+      const capacity = data.capacity || 50;
+      const entries = data.entries || [];
+      const evictions = data.eviction_history || [];
+
+      document.getElementById("capacity-badge").innerText = `${entries.length} / ${capacity}`;
+
+      // Calculate Priority Scores
+      const calculated = entries.map(e => {
+        const delta = Math.max(0, currentStep - e.last_accessed_step);
+        const score = (e.hits * e.trust) / (delta + 1.0);
+        return { ...e, delta_t: delta, priority_score: score };
+      });
+
+      calculated.sort((a, b) => b.priority_score - a.priority_score);
+
+      const tbody = document.getElementById("memory-table-body");
+      if (calculated.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 italic">Memory buffer is empty.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = calculated.map((item, idx) => `
+        <tr class="hover:bg-slate-700/40 transition">
+          <td class="p-3 font-mono font-bold text-teal-400">#${idx + 1}</td>
+          <td class="p-3 font-sans max-w-xs truncate text-slate-200" title="${item.key}">${item.key}</td>
+          <td class="p-3 text-center font-mono font-bold text-teal-300">${item.hits}</td>
+          <td class="p-3 text-center font-mono text-amber-300">${item.trust}</td>
+          <td class="p-3 text-center font-mono text-sky-300">${item.delta_t}</td>
+          <td class="p-3 text-right font-mono font-bold text-emerald-400">${item.priority_score.toFixed(4)}</td>
+        </tr>
+      `).join("");
+
+      // Render Eviction History
+      const evictContainer = document.getElementById("eviction-container");
+      if (evictions.length === 0) {
+        evictContainer.innerHTML = `<div class="p-4 bg-slate-900/50 border border-slate-700/50 rounded-lg text-slate-500 text-center">No evictions recorded.</div>`;
+      } else {
+        evictContainer.innerHTML = evictions.slice().reverse().map(ev => `
+          <div class="p-3 bg-red-950/40 border border-red-800/40 rounded-lg space-y-1">
+            <div class="flex justify-between font-semibold text-red-400">
+              <span>Evicted Key: ${ev.evicted_key.substring(0, 25)}...</span>
+              <span class="font-mono">Score: ${ev.evicted_score}</span>
+            </div>
+            <div class="text-slate-400 flex justify-between">
+              <span>&phi;<sub>hits</sub>: ${ev.hits} | &tau;: ${ev.trust}</span>
+              <span>Step: ${ev.step}</span>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    document.getElementById("json-file-input").addEventListener("change", function(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const runData = JSON.parse(e.target.result);
+          renderRunOutput(runData);
+        } catch (err) {
+          alert("Invalid JSON file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function renderRunOutput(data) {
+      document.getElementById("run-summary-card").classList.remove("hidden");
+      document.getElementById("summary-dataset").innerText = data.run_info?.dataset || "-";
+      document.getElementById("summary-model").innerText = data.run_info?.llm_name || "-";
+      document.getElementById("summary-accuracy").innerText = typeof data.metrics?.accuracy === "number" ? `${(data.metrics.accuracy * 100).toFixed(1)}%` : "-";
+      document.getElementById("summary-samples").innerText = data.metrics?.total_samples || "-";
+
+      const queriesContainer = document.getElementById("queries-container");
+      const queries = data.queries || [];
+
+      queriesContainer.innerHTML = queries.map(q => `
+        <div class="p-4 bg-slate-900/70 border border-slate-700 rounded-xl space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold ${q.is_correct ? 'text-emerald-400' : 'text-rose-400'} font-mono">Sample #${q.sample_index} | ${q.is_correct ? 'CORRECT' : 'INCORRECT'}</span>
+            <span class="text-slate-400">GT: <b class="text-amber-300">${q.ground_truth}</b> | Pred: <b class="text-teal-300">${q.predicted_answer}</b></span>
+          </div>
+          <div class="text-xs text-slate-300 font-sans">${q.query}</div>
+          <div class="text-[11px] bg-slate-950 p-2 rounded border border-slate-800/80 font-mono text-slate-400">
+            <div><b class="text-teal-400">Filtered Triplets:</b> ${JSON.stringify(q.filtered_triplets)}</div>
+            <div class="mt-1"><b class="text-amber-400">Raw Response:</b> ${q.raw_response}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    loadTelemetry();
+  </script>
+</body>
+</html>

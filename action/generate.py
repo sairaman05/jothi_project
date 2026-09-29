@@ -40,52 +40,70 @@ class TripletExtraction(object):
         self.q_type = QueryAnalysis(args, model_name, device)
     
     def check_entities(self, keys_text):
-        
         try:
-            pattern = r"\{(.*?)\}"
-            matches = re.findall(pattern, keys_text.replace("\n", ""))
-            if not matches:
-                raise ValueError("No medical terminologies returned by the model.")
-           
-            keys_dict = json.loads("{" + matches[0] + "}")
-            
-            if "medical_terminologies" not in keys_dict or not keys_dict["medical_terminologies"]:
-                raise ValueError("Model did not return expected 'medical terminologies' key.")
-        except Exception as e:
-            print(f"Error during model processing: {e}")
+            text = re.sub(r'```(?:json)?', '', keys_text).replace('```', '').strip()
+            start = text.find('{')
+            end = text.rfind('}')
+            if start != -1 and end != -1 and end > start:
+                json_str = text[start:end+1]
+                keys_dict = json.loads(json_str)
+            else:
+                pattern = r"\{(.*?)\}"
+                matches = re.findall(pattern, text.replace("\n", ""))
+                if not matches:
+                    return ""
+                keys_dict = json.loads("{" + matches[0] + "}")
+
+            mt_list = None
+            for k in keys_dict:
+                if 'medical_terminolog' in k.lower() or 'terminolog' in k.lower() or 'entities' in k.lower():
+                    mt_list = keys_dict[k]
+                    break
+
+            if not mt_list:
+                return ""
+
+            if isinstance(mt_list, list):
+                mt = list(set(mt_list))
+                return ', '.join(str(item) for item in mt)
+            elif isinstance(mt_list, str):
+                return mt_list
             return ""
-
-        mt = list(set(keys_dict['medical_terminologies']))
-        mt = ', '.join(str(item) for item in mt)
-
-        return mt
+        except Exception:
+            return ""
 
     def check_triplets(self, keys_text):
         try:
-            pattern = r"\{(.*?)\}"
-            matches = re.findall(pattern, keys_text.replace("\n", ""))
-
-            if not matches:
-                raise ValueError("No triplets returned by the model.")
+            text = re.sub(r'```(?:json)?', '', keys_text).replace('```', '').strip()
+            text = text.replace('(', '[').replace(')', ']')
             
-            new_match = matches[0].replace('(', '[').replace(')', ']') ##remove ( and ), since they cannot be converted to dict by json.loads
-            
-            if new_match[0] == '[':
-                new_match = "Triplets :" + new_match
-            keys_dict = json.loads("{" + new_match + "}")
-            if "Triplets" not in keys_dict or not keys_dict["Triplets"]:
-                raise ValueError("Model did not return expected 'triplets' key.")
-        except Exception as e:
-            return ""
-        
-        keys_dict["Triplets"] = list(keys_dict['Triplets'])
-        triplets = list(keys_dict['Triplets'])
+            start = text.find('{')
+            end = text.rfind('}')
+            if start != -1 and end != -1 and end > start:
+                json_str = text[start:end+1]
+                keys_dict = json.loads(json_str)
+            else:
+                pattern = r"\{(.*?)\}"
+                matches = re.findall(pattern, text.replace("\n", ""))
+                if not matches:
+                    return ""
+                new_match = matches[0]
+                if new_match and new_match[0] == '[':
+                    new_match = '"Triplets": ' + new_match
+                keys_dict = json.loads("{" + new_match + "}")
 
+            triplets_list = None
+            for k in keys_dict:
+                if 'triplet' in k.lower():
+                    triplets_list = keys_dict[k]
+                    break
 
-        if len(triplets) == 0:
+            if not triplets_list or not isinstance(triplets_list, list):
+                return ""
+
+            return list(triplets_list)
+        except Exception:
             return ""
-        
-        return triplets
 
     def generated_related_entities(self, query):
 

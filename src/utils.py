@@ -1,25 +1,49 @@
 import os
 import re
 import json
+import requests
 from tqdm import tqdm
-from openai import AzureOpenAI
-from transformers import AutoTokenizer, AutoModelForCausalLM
+
+try:
+    from openai import AzureOpenAI
+except ImportError:
+    AzureOpenAI = None
+
+try:
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+except ImportError:
+    AutoTokenizer = None
+    AutoModelForCausalLM = None
 
 
 class BaseLLM(object):
-    def __init__(self, llm_name):
+    def __init__(self, llm_name, ollama_url="http://localhost:11434"):
         self.llm_name = llm_name
-        if llm_name.lower() in ['llama3.1', 'llama3']:
+        self.ollama_url = os.getenv("OLLAMA_HOST", ollama_url).rstrip("/")
+
+        name_lower = llm_name.lower()
+        if name_lower in ['llama3.1', 'llama3']:
+            if AutoTokenizer is None:
+                raise ImportError("transformers is required for HuggingFace llama3.1 model.")
             self.llm_tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
             self.llm_model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct", device_map='auto')
-        elif llm_name.lower() in ['gpt-4-turbo']:
+        elif name_lower in ['gpt-4-turbo']:
+            if AzureOpenAI is None:
+                raise ImportError("openai package is required for gpt-4-turbo.")
             self.client = AzureOpenAI(
                 azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
-                api_key=os.getenv("AZURE_OPENAI_API_KEY"), # Obtained from the team's key manager
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
                 api_version="2024-05-01-preview"
             )
         else:
-            print("Not find LLM!")
+            self.ollama_model = llm_name
+            try:
+                r = requests.get(f"{self.ollama_url}/api/tags", timeout=3)
+                if r.status_code == 200:
+                    print(f"Connected to local Ollama host at {self.ollama_url} (model: {self.ollama_model})")
+            except Exception as e:
+                print(f"Warning: Could not connect to Ollama at {self.ollama_url}: {e}")
+
     
     def __generate_LLM__(self, query, num_tokens_num):
         messages = [
@@ -70,13 +94,37 @@ class BaseLLM(object):
 
         return response
 
-    
-    def generate(self, query, new_tokens_num):
+    def __generate_Ollama__(self, query, num_tokens_num):
+        url = f"{self.ollama_url}/api/generate"
+        payload = {
+            "model": getattr(self, "ollama_model", self.llm_name),
+            "prompt": query,
+            "stream": False,
+            "options": {
+                "num_predict": num_tokens_num
+            }
+        }
+        try:
+            res = requests.post(url, json=payload, timeout=90)
+            if res.status_code == 200:
+                return res.json().get("response", "")
+            else:
+                print(f"Ollama API Error {res.status_code}: {res.text}")
+                return ""
+        except Exception as e:
+            print(f"Ollama connection error: {e}")
+            return ""
 
-        if self.llm_name in ['llama3.1', 'llama3']:
+    
+    def generate(self, query, new_tokens_num=512):
+        name_lower = self.llm_name.lower()
+        if name_lower in ['llama3.1', 'llama3']:
             return self.__generate_LLM__(query=query, num_tokens_num=new_tokens_num)
-        elif self.llm_name in ['gpt-4-turbo']:
-            return self.__generate_GPT__()
+        elif name_lower in ['gpt-4-turbo']:
+            return self.__generate_GPT__(query=query, num_tokens_num=new_tokens_num)
+        else:
+            return self.__generate_Ollama__(query=query, num_tokens_num=new_tokens_num)
+
 
 
 

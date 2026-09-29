@@ -1,0 +1,263 @@
+{
+  "dataset": "MedDDx-Basic",
+  "key": null,
+  "type": "MCQ",
+  "max_round": 1,
+  "is_revise": true,
+  "KG_name": "primeKG",
+  "llm_name": "llama3.2:3b",
+  "weights_path": "fine_tuned_model/",
+  "enable_memory": true,
+  "memory_capacity": 8,
+  "default_trust": 0.95,
+  "output_dir": "results",
+  "resume": true
+}
+accuracy: 0.37142857142857144
+correct task ids: 0	2	4	6	9	10	12	13	14	17	18	19	21	27	28	41	45	48	49	50	52	53	58	59	60	62	63	65	69	72	73	76	78	79	81	82	83	87	88	89	90	92	93	106	110	115	118	119	122	128	129	130	137	139	144	147	149	151	156	164	166	167	168	169	170	174	185	186	187	188	195	196	197	199	201	202	203	207	208	209	214	219	227	230	231	233	234	235	237	242	244
+
+0: Answer: Option B - Heparin Disaccharide I-S
+1: Answer: Option C - atransferrinemia
+2: Answer: Option D - TG-100801
+3: Answer: Option A - Carboxyamidotriazole
+4: Answer: Option A - perinatal necrotizing enterocolitis
+5: Answer: Option C - Galsulfase
+6: Answer: Option A - pulmonary coin lesion
+7: Answer: Option B - Levobupivacaine
+8: Answer: Option D - Ascorbic acid
+9: Answer: Option A - Tucaresol
+10: Answer: Option D - 2-Methoxyestradiol
+11: Answer: Option D - Miconazole
+12: Answer: Option D - stiff-person syndrome
+13: Answer: Option A - Alatrofloxacin
+14: Answer: Option C - Creatine
+15: Answer: Option C - Nuclear Receptor transcription pathway
+16: Answer: Option C - Quinacrine
+17: Answer: Option B - BAP1-related tumor predisposition syndrome
+18: Answer: Option D - Capsaicin
+19: Answer: Option C - Keratinization
+20: Answer: Option C - neurogenic thoracic outlet syndrome
+21: Answer: Option D - Copper
+22: Answer: Option C - Regulation of HMOX1 expression and activity
+23: Answer: Option A - carnitine-acylcarnitine translocase deficiency
+24: Answer: Option C - 4-Nitrophenyl Phosphate
+25: Answer: Option C - Flavin adenine dinucleotide
+26: Answer: Option D - 6-Deoxyerythronolide B
+27: Answer: Option D - primary pigmented nodular adrenocortical disease
+28: Answer: Option D - Putrescine
+29: Answer: Option C - thiopurine metabolic disease
+30: Answer: Option B - autoimmune pulmonary alveolar proteinosis
+31: Answer: Option B - intellectual disability-muscle weakness-short stature-facial dysmorphism syndrome
+32: Answer: Option B - adrenocortical hypofunction, chronic primary congenital
+33: Answer: Option B - Gimeracil
+34: Answer: Option C - Bendazac
+35: Answer: Option D - Copper
+36: Answer: Option A - Tifuvirtide
+37: Answer: Option A - Zinc cation
+38: Answer: Option B - sensory organ benign neoplasm
+39: Answer: Option B - fatty liver disease, nonalcoholic, susceptibility to, 2
+40: Answer: Option B - DHRS7B
+41: Answer: Option C - Idebenone
+42: Answer: Option D - Chlorhexidine
+43: Answer: Option D - lymphedema, hereditary
+44: Answer: Option C - beta-2-Thienyl-L-alanine
+45: Answer: Option D - Keshan disease
+46: Answer: Option B - Sotatercept
+47: Answer: Option D - vesicular stomatitis
+48: Answer: Option D - chemically-induced disorder
+49: Answer: Option D - interstitial cystitis
+50: Answer: Option C - NGLY1-deficiency
+51: Answer: Option A - atypical childhood epilepsy with centrotemporal spikes
+52: Answer: Option A - sarcosinemia
+53: Answer: Option C - hereditary mucosal leukokeratosis
+54: Answer: Option A - Chitty Hall Webb syndrome
+55: Answer: Option A - Magnesium aspartate
+56: Answer: Option B - Tretinoin
+57: Answer: Option B - vibratory urticaria
+58: Answer: Option A - anhaptoglobinemia
+59: Answer: Option A - Orc1 removal from chromatin
+60: Answer: Option B - Yunis-Varon syndrome
+61: Answer: Option B - histiocytoid cardiomyopathy
+62: Answer: Option C - HTN3
+63: Answer: Option D - Idursulfase
+64: Answer: Option C - subclavian artery aneurysm
+65: Answer: Option B - Tagraxofusp
+66: Answer: Option A - Lactitol
+67: Answer: Option C - Vinblastine
+68: Answer: Option D - (S)-econazole
+69: Answer: Option C - Ademetionine
+70: Answer: Option C - Alitretinoin
+71: Answer: Option D - hypopigmentation-punctate palmoplantar keratoderma syndrome
+72: Answer: Option B - xanthogranulomatous pyelonephritis
+73: Answer: Option B - pyoureter
+74: Answer: Option D - heart-hand syndrome
+75: Answer: Option A - Okihiro syndrome due to a point mutation
+76: Answer: Option B - (R)-Atenolol
+77: Answer: Option B - Methyl salicylate
+78: Answer: Option C - GFAP
+79: Answer: Option C - Beta carotene
+80: Answer: Option C - myoclonus, familial
+81: Answer: Option A - Krukenberg carcinoma
+82: Answer: Option C - Dipivefrin
+83: Answer: Option D - Butamben
+84: Answer: Option C - Praziquantel
+85: Answer: Option D - L-Glutamine
+86: Answer: Option B - Fludeoxyglucose (18F)
+87: Answer: Option C - Formaldehyde
+88: Answer: Option A - refeeding syndrome
+89: Answer: Option D - Copper
+90: Answer: Option D - letterer-Siwe disease
+91: Answer: Option D - Tioconazole
+92: Answer: Option D - Golodirsen
+93: Answer: Option D - REV131
+94: Answer: Option A - odontotrichomelic syndrome
+95: Answer: Option A - oculo-cerebral dysplasia
+96: Answer: Option A - ochronosis disorder
+97: Answer: Option B - 2-(1,3-benzodioxol-5-yl)-5-[(3-fluoro-4-methoxybenzyl)sulfanyl]-1,3,4-oxadiazole
+98: Answer: Option B - alcoholic hepatitis
+99: Answer: Option C - proctitis
+100: Answer: Option B - Borrelia infectious disease
+101: Answer: Option A - Rhodamine 6G
+102: Answer: Option D - immunodeficiency-associated lymphoproliferative disease
+103: Answer: Option B - Tuberculin purified protein derivative
+104: Answer: Option D - Pyridoxal
+105: Answer: Option C - Alitretinoin
+106: Answer: Option A - ROS sensing by NFE2L2
+107: Answer: Option B - ENMD-1198
+108: Answer: Option B - histiocytoid cardiomyopathy
+109: Answer: Option D - (9S,10S)-9-(S-glutathionyl)-10-hydroxy-9,10-dihydrophenanthrene
+110: Answer: Option D - letterer-Siwe disease
+111: Answer: Option B - Resorcinol
+112: Answer: Option D - HSF1-dependent transactivation
+113: Answer: Option D - Permethrin
+114: Answer: Option D - Defective SLC26A2 causes chondrodysplasias
+115: Answer: Option C - RCVRN
+116: Answer: Option B - epispadias (disease)
+117: Answer: Option C - Richieri Costa-Pereira syndrome
+118: Answer: Option A - perinatal necrotizing enterocolitis
+119: Answer: Option C - ADORA2B mediated anti-inflammatory cytokines production
+120: Answer: Option D - Rituximab
+121: Answer: Option D - Olopatadine
+122: Answer: Option B - Hymenialdisine
+123: Answer: Option B - Hematin
+124: Answer: Option B - Cymarin
+125: Answer: Option B - Inotersen
+126: Answer: Option C - Acetoxolone
+127: Answer: Option B - median nerve neuropathy
+128: Answer: Option C - Thiemann disease, familial form
+129: Answer: Option B - Ziconotide
+130: Answer: Option C - acrodysostosis with or without hormone resistance
+131: Answer: Option A - isolated thyroid-stimulating hormone deficiency
+132: Answer: Option B - Dinutuximab
+133: Answer: Option C - Technetium Tc-99m tetrofosmin
+134: Answer: Option C - cholesterol catabolic process disease
+135: Answer: Option A - Tifuvirtide
+136: Answer: Option A - Selenomethionine
+137: Answer: Option B - nut midline carcinoma
+138: Answer: Option C - absent radius-anogenital anomalies syndrome
+139: Answer: Option A - Threonine
+140: Answer: Option C - idiopathic achalasia
+141: Answer: Option D - Icosapent
+142: Answer: Option D - Tioconazole
+143: Answer: Option B - Fludeoxyglucose (18F)
+144: Answer: Option B - brain edema
+145: Answer: Option A - Troxerutin
+146: Answer: Option C - focal dystonia
+147: Answer: Option D - multiple endocrine neoplasia
+148: Answer: Option C - hyperprolinemia
+149: Answer: Option D - PR-104
+150: Answer: Option B - anodontia
+151: Answer: Option D - Gallium nitrate
+152: Answer: Option A - GDF6
+153: Answer: Option C - basal ganglia disease
+154: Answer: Option C - Carboxyamidotriazole
+155: Answer: Option D - neuroendocrine tumor of the appendix, well differentiated, low or intermediate grade
+156: Answer: Option B - Riedel's fibrosing thyroiditis
+157: Answer: Option D - superior vena cava angiosarcoma
+158: Answer: Option B - X-linked intellectual disability-hypotonic face syndrome
+159: Answer: Option D - synaptic congenital myasthenic syndrome
+160: Answer: Option C - signet ring cell carcinoma
+161: Answer: Option C - CR665
+162: Answer: Option B - internal carotid artery stenosis
+163: Answer: Option C - intellectual developmental disorder with short stature and variable skeletal anomalies
+164: Answer: Option B - Icatibant
+165: Answer: Option A - BMAL1:CLOCK,NPAS2 activates circadian gene expression
+166: Answer: Option D - moyamoya angiopathy-short stature-facial dysmorphism-hypergonadotropic hypogonadism syndrome
+167: Answer: Option B - Dornase alfa
+168: Answer: Option C - X-linked Opitz G/BBB syndrome
+169: Answer: Option A - herpetic whitlow
+170: Answer: Option B - familial congenital mirror movements
+171: Answer: Option A - microcephaly-capillary malformation syndrome
+172: Answer: Option B - Fludeoxyglucose (18F)
+173: Answer: Option D - Eritoran
+174: Answer: Option D - estrogen resistance syndrome
+175: Answer: Option C - Methylestrenolone
+176: Answer: Option C - Nandrolone phenpropionate
+177: Answer: Option C - Benzylpenicilloyl polylysine
+178: Answer: Option A - Troxerutin
+179: Answer: Option C - Hypromellose
+180: Answer: Option B - Nicotinamide adenine dinucleotide phosphate
+181: Answer: Option B - skin papilloma
+182: Answer: Option C - congenital malabsorptive diarrhea 4
+183: Answer: Option A - Posaconazole
+184: Answer: Option D - idiopathic hypereosinophilic syndrome
+185: Answer: Option C - Thiemann disease, familial form
+186: Answer: Option B - Clostridium difficile colitis
+187: Answer: Option B - pityriasis rosea
+188: Answer: Option B - Eteplirsen
+189: Answer: Option A - KRN-5500
+190: Answer: Option B - Gallium maltolate
+191: Answer: Option D - Pyridoxal
+192: Answer: Option C - Cupric oxide
+193: Answer: Option B - NUDT13
+194: Answer: Option A - FG-2216
+195: Answer: Option A - Carbamide peroxide
+196: Answer: Option A - Polyethylene glycol 3500
+197: Answer: Option A - LLL-3348
+198: Answer: Option B - Allobarbital
+199: Answer: Option A - Sonidegib
+200: Answer: Option A - Glycocyamine
+201: Answer: Option C - RCVRN
+202: Answer: Option B - Apremilast
+203: Answer: Option C - Defibrotide
+204: Answer: Option D - Acetylcysteine
+205: Answer: Option C - myotonic dystrophy
+206: Answer: Option B - Tetramethylammonium
+207: Answer: Option B - arthus reaction
+208: Answer: Option A - Talimogene laherparepvec
+209: Answer: Option C - Marshall-Smith syndrome
+210: Answer: Option C - lethal arthrogryposis-anterior horn cell disease syndrome
+211: Answer: Option C - Cohen syndrome
+212: Answer: Option A - Mowat-Wilson syndrome due to monosomy 2q22
+213: Answer: Option C - Corticotropin
+214: Answer: Option C - Suramin
+215: Answer: Option D - Sensory processing of sound by outer hair cells of the cochlea
+216: Answer: Option A - phosphoenolpyruvate carboxykinase deficiency, mitochondrial
+217: Answer: Option A - Synthetic camphor
+218: Answer: Option D - Arginine
+219: Answer: Option A - Butenafine
+220: Answer: Option A - Imiglucerase
+221: Answer: Option C - balanitis
+222: Answer: Option C - Signaling by Receptor Tyrosine Kinases
+223: Answer: Option B - Urea
+224: Answer: Option C - Golodirsen
+225: Answer: Option A - Latanoprostene bunod
+226: Answer: Option A - Rhodamine 6G
+227: Answer: Option A - Emricasan
+228: Answer: Option C - Piritrexim
+229: Answer: Option C - endometrium neoplasm
+230: Answer: Option D - Choline
+231: Answer: Option D - Tangier disease
+232: Answer: Option A - hypoaldosteronism disease
+233: Answer: Option D - Copper
+234: Answer: Option D - trypsinogen deficiency
+235: Answer: Option B - 2-mercaptobenzothiazole
+236: Answer: Option C - Cupric oxide
+237: Answer: Option D - chemically-induced disorder
+238: Answer: Option C - benign hypertensive renal disease
+239: Answer: Option B - Thiocitrulline
+240: Answer: Option C - ophthalmoplegia, familial static
+241: Answer: Option A - caveolinopathy
+242: Answer: Option C - Polaprezinc
+243: Answer: Option A - Mecasermin rinfabate
+244: Answer: Option B - Clostridium difficile colitis
