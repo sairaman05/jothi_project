@@ -1,0 +1,106 @@
+Implementation Plan: MedStreamMem Memory Optimization Proof & Accuracy Benchmarking
+Project: KGARevion + MedStreamMem Bounded Memory Framework
+1. Executive Summary & Overview
+This document provides the complete, authoritative implementation plan for evaluating and proving MedStreamMem (Option B: Domain-Weighted Fusion) within the KGARevion framework. The plan focuses on mathematically and empirically quantifying memory savings (Before vs. After values), tracking full precision and recall metrics, and evaluating accuracy gains across local Ollama models.
+2. Complete Evaluation Metrics Specification
+Below is the comprehensive specification of all 11 evaluation metrics measured during benchmark execution:
+Metric Name
+Category
+Formula / Logic
+Target Goal / Meaning
+Output Format
+Memory Before Value
+Resource Usage
+RAM_Before = f(N_queries)
+Unconstrained RAM consumption (O(N) growth) before optimization
+Megabytes / GB (e.g., 850.0 MB)
+Memory Optimized Value
+Resource Usage
+RAM_Optimized = f(K_capacity)
+Hard-bounded RAM consumption (O(K) constant) after MedStreamMem
+Megabytes (e.g., 42.5 MB)
+Memory Reduction % (MR %)
+Resource Efficiency
+(1 - RAM_Optimized / RAM_Before) * 100%
+Quantifies exact percentage of memory saved by MedStreamMem
+Percentage (e.g., 95.0% RAM Saved)
+Accuracy (%)
+Model Performance
+(Correct Predictions / Total Questions) * 100%
+Measures percentage of correctly answered clinical MCQ questions
+Percentage (e.g., 82.5%)
+Precision (%)
+Model Performance
+(True Positives / (TP + FP)) * 100%
+Measures precision of selected option predictions and clinical terms
+Percentage (e.g., 84.2%)
+Recall (%)
+Model Performance
+(True Positives / (TP + FN)) * 100%
+Measures ability to identify all relevant correct clinical choices
+Percentage (e.g., 81.0%)
+F1-Score (%)
+Model Performance
+2 * (Precision * Recall) / (Precision + Recall)
+Harmonic mean balancing Precision and Recall
+Percentage (e.g., 82.6%)
+Cache Hit Ratio (CHR %)
+Memory Performance
+(N_hits / (N_hits + N_misses)) * 100%
+Evaluates memory lookup efficiency on repeated/similar queries
+Percentage (e.g., 45.0%)
+Average Latency (L_bar)
+Computational Speed
+L_bar = CHR * L_hit + (1 - CHR) * L_miss
+Measures execution time per query (0.001s on Hit vs ~120s on Miss)
+Seconds (e.g., 12.4s)
+High-Trust Retention Ratio (HTRR %)
+Memory Quality
+(Sum I(tau_e >= 0.90) / K) * 100%
+Measures percentage of memory buffer holding verified WHO/PubMed guidelines
+Percentage (e.g., 88.0%)
+ROUGE-1 / ROUGE-2 / ROUGE-L
+SAQ Answer Quality
+Standard n-gram overlap (Precision, Recall, F-Score)
+Evaluates open-ended short answer quality against reference rationale
+Score (e.g., R1: 48.2%, RL: 42.5%)
+3. Detailed Before vs. After Memory Comparison Model
+BEFORE Optimization (Unbounded Growth / Standard LRU / LFU):• Unbounded Baseline: Memory buffer grows linearly O(N) with query volume. For N = 1,000 queries, Memory Before Value ≈ 850 MB.• Standard LRU/LFU Flaw: Standard LRU evicts purely on recency (Δt), causing recent low-authority queries (τ = 0.50) to evict authoritative clinical guidelines (τ = 0.95). Standard LFU ignores recency decay.
+AFTER Optimization (MedStreamMem: Domain-Weighted Fusion):• Hard Bounded Capacity O(K): Memory capacity is strictly capped at K items (e.g., K = 50). Memory Optimized Value ≈ 42.5 MB (95.0% RAM reduction).• Formula: Priority Score = (phi_hits * tau_trust) / (delta_t + 1.0). Protects high-authority clinical guidelines (tau = 0.95) and popular answers while maintaining constant RAM usage.
+Metric Aspect
+BEFORE (Unbounded / LRU)
+AFTER (MedStreamMem)
+Measurable Benefit
+Memory Value (RAM)
+Memory Before: 850 MB (N=1000)
+Memory Optimized: 42.5 MB (K=50)
+95.0% RAM Footprint Reduction
+Entry Count
+N = 1,000 entries (Unbounded)
+K = 50 entries (Fixed Capacity)
+Fixed 50 Entry Memory Bound
+Lookup Speed
+O(N) slowdown over time
+O(1) Hash Table Lookup
+Sub-Millisecond Deterministic Lookup
+Execution Time on Hit
+120s – 150s (Full LLM run)
+~0.001s (Instant Memory Hit)
+~100,000x Latency Reduction on hits
+High-Trust Guideline Retention
+Low (Evicted by recent noise)
+High (tau = 0.95 priority weighting)
+Protects verified medical guidelines
+Accuracy & Precision Tracking
+Basic accuracy only
+Full Accuracy, Precision, Recall, F1 & ROUGE
+Comprehensive metric evaluation
+4. Phased Code Implementation Roadmap
+• Phase 1: Memory Baseline Comparison Framework (src/memory.py)  Implement 4 comparative memory classes: UnboundedMemory (tracks Memory Before Value), LRUMemory, LFUMemory, and MedStreamMem (tracks Memory Optimized Value).
+• Phase 2: LLM Accuracy & Precision Optimization  Benchmark local models: llama3.2:3b, llama3:latest (8B), and deepseek-r1:14b. Implement Chain-of-Thought (CoT) prompting in action/answer.py and metric functions in src/utils.py.
+• Phase 3: Automated Experimentation & Metric Suite (scratch/benchmark_suite.py)  Build automated benchmark suite to evaluate all 4 memory baselines and 3 models, computing all 11 metrics and exporting CSV/JSON reports to results/paper_experiments/.
+• Phase 4: React UI Visualizer (ui/react_dashboard.html)  Update React UI to display live Memory Before Value vs. Memory Optimized Value cards, Memory Reduction %, Precision/Accuracy stats, and eviction heatmaps.
+5. Verification & Testing Plan
+1. Automated Unit Test: Run scratch/test_memory_comparison.py to verify Memory Before vs. Memory Optimized values and high-trust retention under noise.
+2. Multi-Model Test: Run test samples with llama3:latest and deepseek-r1:14b to verify precision and accuracy gains.
+3. Full Benchmark Suite Run: Run scratch/benchmark_suite.py to export the complete report with Memory Before vs Optimized values to comparison_results.csv.

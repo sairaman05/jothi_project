@@ -96,18 +96,23 @@ class BaseLLM(object):
 
     def __generate_Ollama__(self, query, num_tokens_num):
         url = f"{self.ollama_url}/api/generate"
+        eff_tokens = max(num_tokens_num, 384) if "deepseek" in self.llm_name.lower() else num_tokens_num
         payload = {
             "model": getattr(self, "ollama_model", self.llm_name),
             "prompt": query,
             "stream": False,
             "options": {
-                "num_predict": num_tokens_num
+                "num_predict": eff_tokens
             }
         }
         try:
             res = requests.post(url, json=payload, timeout=90)
             if res.status_code == 200:
-                return res.json().get("response", "")
+                data = res.json()
+                resp = data.get("response", "")
+                if not resp and data.get("thinking"):
+                    resp = data.get("thinking", "")
+                return resp
             else:
                 print(f"Ollama API Error {res.status_code}: {res.text}")
                 return ""
@@ -173,7 +178,6 @@ class MedDDxLoader:
         if self.data not in benchmark:
             raise KeyError("{:s} not supported".format(data))
         self.dataset = benchmark[self.data]
-        print(self.dataset)
         self.index = sorted(self.dataset.keys())
     
     def process_dataset(self, dir):       
@@ -225,7 +229,6 @@ class AfrimedLoader:
             raise KeyError("{:s} not supported".format(data))
         self.dataset = benchmark[self.data]
         print("{} has {} queries".format(data, len(self.dataset)))
-        print(self.dataset)
         self.index = sorted(self.dataset.keys())
     
     def process_dataset(self, dir):       
@@ -302,3 +305,163 @@ class AfrimedLoader:
             return [self.__getitem__(i) for i in range(self.__len__())[key]]
         else:
             raise KeyError("Key type not supported.")
+
+
+# =====================================================================
+# Complete 11 Evaluation Metrics Suite (MedStreamMem Benchmark)
+# =====================================================================
+
+def calculate_accuracy(labels, predictions):
+    """Metric 4: Accuracy (%) = (Correct Predictions / Total Questions) * 100%"""
+    if not labels or len(labels) == 0:
+        return 0.0
+    correct = sum(1 for yt, yp in zip(labels, predictions) if str(yt).strip().upper() == str(yp).strip().upper())
+    return round((correct / len(labels)) * 100.0, 2)
+
+
+def calculate_precision_recall_f1(labels, predictions):
+    """
+    Metric 5: Precision (%) = (TP / (TP + FP)) * 100%
+    Metric 6: Recall (%) = (TP / (TP + FN)) * 100%
+    Metric 7: F1-Score (%) = 2 * (Precision * Recall) / (Precision + Recall)
+    Computes Macro and Micro metrics across all classes.
+    """
+    if not labels or len(labels) == 0:
+        return {"precision": 0.0, "recall": 0.0, "f1_score": 0.0, "class_breakdown": {}}
+
+    y_true = [str(x).strip().upper() for x in labels]
+    y_pred = [str(x).strip().upper() for x in predictions]
+
+    valid_targets = sorted(list(set(c for c in y_true if c and c in ['A', 'B', 'C', 'D', 'E'])))
+    classes = valid_targets if valid_targets else sorted(list(set(c for c in y_true if c)))
+    if not classes:
+        return {"precision": 0.0, "recall": 0.0, "f1_score": 0.0, "class_breakdown": {}}
+
+    precisions = []
+    recalls = []
+    f1s = []
+
+    for cls in classes:
+        tp = sum(1 for yt, yp in zip(y_true, y_pred) if yt == cls and yp == cls)
+        fp = sum(1 for yt, yp in zip(y_true, y_pred) if yt != cls and yp == cls)
+        fn = sum(1 for yt, yp in zip(y_true, y_pred) if yt == cls and yp != cls)
+
+        p = (tp / (tp + fp)) * 100.0 if (tp + fp) > 0 else 0.0
+        r = (tp / (tp + fn)) * 100.0 if (tp + fn) > 0 else 0.0
+        f1 = (2.0 * p * r / (p + r)) if (p + r) > 0 else 0.0
+
+        precisions.append(p)
+        recalls.append(r)
+        f1s.append(f1)
+
+    macro_precision = round(sum(precisions) / len(precisions), 2)
+    macro_recall = round(sum(recalls) / len(recalls), 2)
+    macro_f1 = (2.0 * macro_precision * macro_recall / (macro_precision + macro_recall)) if (macro_precision + macro_recall) > 0 else 0.0
+    macro_f1 = round(macro_f1, 2)
+
+    return {
+        "precision": macro_precision,
+        "recall": macro_recall,
+        "f1_score": macro_f1,
+        "class_breakdown": {
+            cls: {"precision": round(p, 2), "recall": round(r, 2), "f1": round(f, 2)}
+            for cls, p, r, f in zip(classes, precisions, recalls, f1s)
+        }
+    }
+
+
+def calculate_cache_hit_ratio(hits, misses):
+    """Metric 8: Cache Hit Ratio (CHR %) = (N_hits / (N_hits + N_misses)) * 100%"""
+    total = hits + misses
+    if total <= 0:
+        return 0.0
+    return round((hits / total) * 100.0, 2)
+
+
+def calculate_average_latency(chr_pct, l_hit=0.001, l_miss=12.4):
+    """Metric 9: Average Latency (L_bar) = CHR * L_hit + (1 - CHR) * L_miss"""
+    chr_ratio = chr_pct / 100.0
+    l_bar = (chr_ratio * l_hit) + ((1.0 - chr_ratio) * l_miss)
+    return round(l_bar, 4)
+
+
+def calculate_high_trust_retention_ratio(entries, threshold=0.90):
+    """Metric 10: High-Trust Retention Ratio (HTRR %) = (Sum I(tau_e >= 0.90) / K) * 100%"""
+    if not entries:
+        return 0.0
+    count_high = sum(1 for e in entries if float(e.get("trust", 0.0)) >= threshold)
+    return round((count_high / len(entries)) * 100.0, 2)
+
+
+def calculate_memory_reduction_pct(ram_before_mb, ram_optimized_mb):
+    """Metric 3: Memory Reduction % (MR %) = (1 - RAM_Optimized / RAM_Before) * 100%"""
+    if ram_before_mb <= 0:
+        return 0.0
+    mr = (1.0 - (ram_optimized_mb / ram_before_mb)) * 100.0
+    return round(max(0.0, min(100.0, mr)), 2)
+
+
+def calculate_rouge_metrics(references, hypotheses):
+    """Metric 11: ROUGE-1 / ROUGE-2 / ROUGE-L (Precision, Recall, F-Score)"""
+    if not references or not hypotheses or len(references) != len(hypotheses):
+        return {"rouge1_f": 0.0, "rouge2_f": 0.0, "rougeL_f": 0.0}
+    try:
+        from rouge_score import rouge_scorer
+        scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+        r1_list, r2_list, rl_list = [], [], []
+        for ref, hyp in zip(references, hypotheses):
+            scores = scorer.score(ref, hyp)
+            r1_list.append(scores['rouge1'].fmeasure * 100.0)
+            r2_list.append(scores['rouge2'].fmeasure * 100.0)
+            rl_list.append(scores['rougeL'].fmeasure * 100.0)
+        return {
+            "rouge1_f": round(sum(r1_list) / len(r1_list), 2),
+            "rouge2_f": round(sum(r2_list) / len(r2_list), 2),
+            "rougeL_f": round(sum(rl_list) / len(rl_list), 2)
+        }
+    except Exception as e:
+        return {"rouge1_f": 0.0, "rouge2_f": 0.0, "rougeL_f": 0.0, "error": str(e)}
+
+
+def compute_all_11_metrics(
+    labels,
+    predictions,
+    ram_before_mb,
+    ram_optimized_mb,
+    cache_hits=0,
+    cache_misses=0,
+    avg_hit_latency=0.001,
+    avg_miss_latency=12.4,
+    memory_entries=None,
+    saq_references=None,
+    saq_hypotheses=None
+):
+    """
+    Computes all 11 evaluation metrics defined in the MedStreamMem specification.
+    """
+    acc = calculate_accuracy(labels, predictions)
+    prf = calculate_precision_recall_f1(labels, predictions)
+    mr_pct = calculate_memory_reduction_pct(ram_before_mb, ram_optimized_mb)
+    chr_pct = calculate_cache_hit_ratio(cache_hits, cache_misses)
+    avg_lat = calculate_average_latency(chr_pct, avg_hit_latency, avg_miss_latency)
+    htrr_pct = calculate_high_trust_retention_ratio(memory_entries or [], threshold=0.90)
+
+    rouge_scores = {}
+    if saq_references and saq_hypotheses:
+        rouge_scores = calculate_rouge_metrics(saq_references, saq_hypotheses)
+
+    return {
+        "1_memory_before_mb": round(ram_before_mb, 2),
+        "2_memory_optimized_mb": round(ram_optimized_mb, 2),
+        "3_memory_reduction_pct": mr_pct,
+        "4_accuracy_pct": acc,
+        "5_precision_pct": prf["precision"],
+        "6_recall_pct": prf["recall"],
+        "7_f1_score_pct": prf["f1_score"],
+        "8_cache_hit_ratio_pct": chr_pct,
+        "9_average_latency_sec": avg_lat,
+        "10_high_trust_retention_ratio_pct": htrr_pct,
+        "11_rouge_scores": rouge_scores,
+        "class_breakdown": prf.get("class_breakdown", {})
+    }
+

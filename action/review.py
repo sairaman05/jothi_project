@@ -13,14 +13,14 @@ class Review(object):
         self.action_desc = 'Using this action to score generated triplets.'
         self.use_llm_eval = False
 
-        try:
-            from .inference_review import ReviewInfer
-            if hasattr(self.llm, 'llm_model') and self.llm.llm_model is not None:
+        if hasattr(self.llm, 'llm_model') and self.llm.llm_model is not None:
+            try:
+                from .inference_review import ReviewInfer
                 self.model = ReviewInfer(model = self.llm.llm_model, tokenizer=self.llm.llm_tokenizer, model_weights = args.weights_path)
-            else:
-                self.model = ReviewInfer(model_weights = args.weights_path, model_name = 'llama3.1')
-        except Exception as e:
-            logging.info(f"Using LLM-prompted verification for Review step: {e}")
+            except Exception as e:
+                logging.info(f"Using LLM-prompted verification for Review step: {e}")
+                self.use_llm_eval = True
+        else:
             self.use_llm_eval = True
 
         self.is_revise = args.is_revise
@@ -60,6 +60,8 @@ class Review(object):
     
     def call(self, triplets, query):
         triplet_list = self.check_triplets(triplets)
+        if isinstance(triplet_list, list) and len(triplet_list) > 5:
+            triplet_list = triplet_list[:5]
         scores = []
         select_triplets = []
         

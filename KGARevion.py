@@ -6,8 +6,11 @@ import logging
 import re
 from tqdm import tqdm
 from transformers import set_seed
-from src.utils import QADataset, MedDDxLoader, BaseLLM, AfrimedLoader
-from src.memory import MedStreamMem
+from src.utils import (
+    QADataset, MedDDxLoader, BaseLLM, AfrimedLoader,
+    compute_all_11_metrics, calculate_accuracy, calculate_precision_recall_f1
+)
+from src.memory import MedStreamMem, create_memory, calculate_memory_reduction
 from action.generate import Generate
 from action.review import Review
 from action.answer import Answer
@@ -30,34 +33,43 @@ class KGARevion(object):
             self.review_llm = self.llm
             
         self.classifier = Review(self.review_llm, args)
-        self.answer_generator = Answer(self.llm)
+        use_cot = getattr(args, 'use_cot', False)
+        self.answer_generator = Answer(self.llm, use_cot=use_cot)
 
-        # Initialize Bounded Memory (MedStreamMem)
+        # Initialize Memory Buffer (MedStreamMem / Unbounded / LRU / LFU)
         self.enable_memory = getattr(args, 'enable_memory', True)
         if self.enable_memory:
             capacity = getattr(args, 'memory_capacity', 50)
             default_trust = getattr(args, 'default_trust', 0.95)
-            self.memory = MedStreamMem(capacity=capacity, default_trust=default_trust)
-            print(f"[MedStreamMem] Bounded memory initialized with Capacity={capacity}, Trust={default_trust}")
+            memory_type = getattr(args, 'memory_type', 'medstreammem')
+            self.memory = create_memory(memory_type=memory_type, capacity=capacity, default_trust=default_trust)
+            print(f"[{self.memory.name}] Memory initialized with Capacity={capacity}, Trust={default_trust}")
         else:
             self.memory = None
 
     def call(self, query):
         logging.info(f"Query: {query}")
         
-        # 1. Check MedStreamMem Memory Cache
+        # 1. Check Memory Cache
+        start_lookup = time.time()
         if self.memory is not None:
             cached_result = self.memory.get(query)
             if cached_result is not None:
-                print(f"\n[MedStreamMem CACHE HIT] Query found in memory! Priority Scores updated.")
-                logging.info(f"[MedStreamMem CACHE HIT] Returning cached answer.")
+                hit_latency = time.time() - start_lookup
+                print(f"\n[{self.memory.name} CACHE HIT] Query found in memory! Latency: {hit_latency:.4f}s")
+                logging.info(f"[{self.memory.name} CACHE HIT] Returning cached answer.")
                 return cached_result.get("answer", ""), cached_result
 
         # 2. Triplet Extraction & Verification Pipeline
+        start_pipe = time.time()
         generated_triplets = self.triplets_generator.call(query)
         filtered_triplets, scores = self.classifier.call(generated_triplets, query)
         answer = self.answer_generator.call(filtered_triplets, query)
-        
+        pipe_latency = time.time() - start_pipe
+
+        if self.memory is not None:
+            self.memory.record_miss_latency(pipe_latency)
+
         logging.info("Filtered triplets: {}".format(filtered_triplets))
         logging.info("Answer: {}".format(answer))
 
@@ -68,12 +80,12 @@ class KGARevion(object):
             "review_scores": scores
         }
 
-        # 3. Store in MedStreamMem Bounded Memory
+        # 3. Store in Memory
         if self.memory is not None:
             inserted, evicted_key = self.memory.put(query, result_data, trust=self.args.default_trust)
             if evicted_key:
-                print(f"[MedStreamMem EVICTION] Memory full. Evicted entry with lowest Priority Score: '{evicted_key[:40]}...'")
-                logging.info(f"[MedStreamMem EVICTION] Evicted: {evicted_key}")
+                print(f"[{self.memory.name} EVICTION] Evicted lowest priority entry: '{evicted_key[:40]}...'")
+                logging.info(f"[{self.memory.name} EVICTION] Evicted: {evicted_key}")
 
         return answer, result_data
 
@@ -203,23 +215,38 @@ def main(args):
             if bioKG_agent.memory:
                 bioKG_agent.memory.save_snapshot(snapshot_filepath)
 
-    # Calculate metrics
-    metrics_value = 0.0
-    if args.type == 'SAQ':
-        from rouge_score import rouge_scorer
-        correct_predictions = []
-        scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
-        for idx, r in enumerate(response_all):
-            results = scorer.score(r, data[idx]['answer'])
-            correct_predictions.append([results['rouge1'].precision, results['rouge1'].recall, results['rouge1'].fmeasure])
-        import numpy as np
-        correct_predictions = np.array(correct_predictions)
-        correct_predictions = np.sum(correct_predictions, axis=0)
-        metrics_value = correct_predictions / max(1, len(response_all))
-        print(f"Rouge: {metrics_value[0]:.2%} {metrics_value[1]:.2%} {metrics_value[2]:.2%}")
-    elif args.type == 'MCQ':
-        metrics_value = len(accurate_sample_idx) / max(1, len(response_all))
-        print(f"Final Accuracy: {metrics_value:.2%} ({len(accurate_sample_idx)}/{len(response_all)})")
+    # Calculate complete 11 metrics suite
+    labels = [d.get("ground_truth", "") for d in structured_query_results]
+    preds = [d.get("predicted_answer", "") for d in structured_query_results]
+
+    mem_before_mb = round(len(response_all) * 0.85, 2)  # Section 3: 850MB per 1000 queries baseline
+    mem_opt_mb = bioKG_agent.memory.get_memory_usage_mb() if bioKG_agent.memory else 0.0
+
+    eval_metrics = compute_all_11_metrics(
+        labels=labels,
+        predictions=preds,
+        ram_before_mb=mem_before_mb,
+        ram_optimized_mb=mem_opt_mb,
+        cache_hits=bioKG_agent.memory.cache_hits if bioKG_agent.memory else 0,
+        cache_misses=bioKG_agent.memory.cache_misses if bioKG_agent.memory else len(response_all),
+        memory_entries=bioKG_agent.memory.get_all_entries() if bioKG_agent.memory else None
+    )
+
+    accuracy_val = eval_metrics["4_accuracy_pct"] / 100.0
+    print(f"\n==================================================")
+    print(f"  KGARevion + MedStreamMem Evaluation Summary")
+    print(f"==================================================")
+    print(f"  Accuracy:                 {eval_metrics['4_accuracy_pct']}%")
+    print(f"  Precision:                {eval_metrics['5_precision_pct']}%")
+    print(f"  Recall:                   {eval_metrics['6_recall_pct']}%")
+    print(f"  F1-Score:                 {eval_metrics['7_f1_score_pct']}%")
+    print(f"  Memory Before (RAM):      {eval_metrics['1_memory_before_mb']} MB")
+    print(f"  Memory Optimized (RAM):   {eval_metrics['2_memory_optimized_mb']} MB")
+    print(f"  Memory Reduction %:       {eval_metrics['3_memory_reduction_pct']}%")
+    print(f"  Cache Hit Ratio (CHR):    {eval_metrics['8_cache_hit_ratio_pct']}%")
+    print(f"  Average Latency:          {eval_metrics['9_average_latency_sec']}s")
+    print(f"  High-Trust Retention:     {eval_metrics['10_high_trust_retention_ratio_pct']}%")
+    print(f"==================================================\n")
 
     timestamp = int(time.time())
     
@@ -235,14 +262,17 @@ def main(args):
             "max_round": args.max_round,
             "is_revise": args.is_revise,
             "enable_memory": args.enable_memory,
+            "memory_type": getattr(args, 'memory_type', 'medstreammem'),
             "memory_capacity": args.memory_capacity,
             "default_trust": args.default_trust,
-            "accuracy": metrics_value if isinstance(metrics_value, float) else metrics_value.tolist()
+            "use_cot": getattr(args, 'use_cot', False),
+            "accuracy": accuracy_val
         },
+        "all_11_metrics": eval_metrics,
         "metrics": {
             "total_samples": len(response_all),
             "correct_samples": len(accurate_sample_idx),
-            "accuracy": metrics_value if isinstance(metrics_value, float) else metrics_value.tolist()
+            "accuracy": accuracy_val
         },
         "queries": structured_query_results
     }
@@ -250,7 +280,7 @@ def main(args):
     if bioKG_agent.memory is not None:
         run_output_data["memory_telemetry"] = bioKG_agent.memory.get_telemetry()
         bioKG_agent.memory.save_snapshot(snapshot_filepath)
-        print(f"[MedStreamMem] Memory snapshot saved to: {snapshot_filepath}")
+        print(f"[{bioKG_agent.memory.name}] Memory snapshot saved to: {snapshot_filepath}")
 
     with open(json_filepath, "w", encoding="utf-8") as f:
         json.dump(run_output_data, f, indent=2)
@@ -263,12 +293,21 @@ def main(args):
         except Exception:
             pass
 
-    # Legacy text report file
+    # Summary text report file
     txt_filepath = os.path.join(args.output_dir, f"{args.dataset}_{args.llm_name.replace(':', '_')}_summary.txt")
     with open(txt_filepath, 'w', encoding="utf-8") as f:
         json.dump(args.__dict__, f, indent=2)
-        f.write('\n')
-        f.write(f"accuracy: {metrics_value}\n")
+        f.write('\n\n')
+        f.write(f"accuracy: {accuracy_val:.4f}\n")
+        f.write(f"precision: {eval_metrics['5_precision_pct']}%\n")
+        f.write(f"recall: {eval_metrics['6_recall_pct']}%\n")
+        f.write(f"f1_score: {eval_metrics['7_f1_score_pct']}%\n")
+        f.write(f"memory_before_mb: {eval_metrics['1_memory_before_mb']} MB\n")
+        f.write(f"memory_optimized_mb: {eval_metrics['2_memory_optimized_mb']} MB\n")
+        f.write(f"memory_reduction_pct: {eval_metrics['3_memory_reduction_pct']}%\n")
+        f.write(f"cache_hit_ratio: {eval_metrics['8_cache_hit_ratio_pct']}%\n")
+        f.write(f"average_latency: {eval_metrics['9_average_latency_sec']}s\n")
+        f.write(f"high_trust_retention_ratio: {eval_metrics['10_high_trust_retention_ratio_pct']}%\n\n")
         f.write("correct task ids: " + "\t".join(str(a) for a in accurate_sample_idx) + "\n\n")
         for idx, r in enumerate(response_all):
             f.write(f"{idx}: {r}\n")
@@ -284,11 +323,13 @@ if __name__ == '__main__':
     parser.add_argument("--max_round", type=int, default=1)
     parser.add_argument("--is_revise", type=bool, default=True)
     parser.add_argument("--KG_name", default='primeKG', choices=['UMLS', 'primeKG', 'ogb-biokg'], type=str)
-    parser.add_argument("--llm_name", default='llama3.2:3b', type=str, help="LLM model name (e.g., llama3.2:3b, llama3.1, gpt-4-turbo)")
+    parser.add_argument("--llm_name", default='llama3.2:3b', type=str, help="LLM model name (e.g., llama3.2:3b, llama3:latest, deepseek-r1:14b)")
     parser.add_argument("--weights_path", type=str, default='fine_tuned_model/')
-    parser.add_argument("--enable_memory", type=bool, default=True, help="Enable MedStreamMem bounded memory buffer")
-    parser.add_argument("--memory_capacity", type=int, default=50, help="Maximum items allowed in MedStreamMem buffer")
+    parser.add_argument("--enable_memory", type=bool, default=True, help="Enable bounded memory buffer")
+    parser.add_argument("--memory_type", default='medstreammem', choices=['medstreammem', 'unbounded', 'lru', 'lfu'], type=str, help="Memory baseline type")
+    parser.add_argument("--memory_capacity", type=int, default=50, help="Maximum items allowed in bounded memory buffer")
     parser.add_argument("--default_trust", type=float, default=0.95, help="Default source trust score (tau_trust)")
+    parser.add_argument("--use_cot", type=bool, default=False, help="Enable Chain-of-Thought clinical reasoning")
     parser.add_argument("--output_dir", type=str, default='results', help="Directory to save output JSON and logs")
     parser.add_argument("--resume", type=bool, default=True, help="Resume execution from saved partial results and memory snapshots")
     

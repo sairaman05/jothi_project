@@ -1,82 +1,73 @@
 {
-  "capacity": 5,
+  "name": "MedStreamMem",
+  "capacity": 50,
   "default_trust": 0.95,
-  "current_step": 26,
-  "eviction_history": [
-    {
-      "evicted_key": "What are the primary interactions between Lisinopril and Potassium supplements?",
-      "evicted_score": 0.1357,
-      "hits": 1,
-      "trust": 0.95,
-      "delta_t": 6,
-      "step": 24
-    }
-  ],
+  "current_step": 16,
+  "total_lookups": 12,
+  "cache_hits": 4,
+  "cache_misses": 8,
+  "eviction_history": [],
   "entries": [
     {
-      "key": "Explain the mechanism of action of Metformin in type 2 diabetes.",
+      "key": "What is the immediate empirical pharmacotherapy for suspected acute bacterial meningitis in adults?\nA: Oral Amoxicillin\nB: IV Ceftriaxone 2g with Dexamethasone\nC: Acetaminophen alone\nD: Hydrochlorothiazide",
       "value": {
-        "answer": "Metformin is a biguanide antidiabetic medication that is widely used to treat type 2 diabetes. The primary mechanism of action of metformin involves its effect on glucose metabolism and insulin sensitivity.\n\nWhen taken orally, metformin is absorbed from the gastrointestinal tract and then distributed throughout the body. Once inside the cells, it inhibits mitochondrial respiratory enzyme complex I, which is a critical component in the production of ATP (adenosine triphosphate), the primary energy source for cells.\n\nBy inhibiting complex I, metformin reduces the rate at which glucose is converted into ATP. This results in a decrease in the amount of glucose available to the liver, which then reduces the release of free fatty acids and glycerol into the bloodstream.\n\nAdditionally, metformin also activates AMP-activated protein kinase (AMPK), an enzyme that plays a key role in regulating energy balance within cells. Activation of AMPK leads to increased insulin sensitivity, allowing glucose to enter the cells more efficiently. This increase in insulin sensitivity helps to lower blood glucose levels and improve glycemic control.\n\nOverall, the mechanism of action of metformin involves a combination of inhibiting mitochondrial function and activating cellular pathways that enhance insulin sensitivity, ultimately leading to improved glucose metabolism and reduced blood sugar",
-        "generated_triplets": "There is no triplets related to input query",
-        "filtered_triplets": "[]",
-        "review_scores": []
+        "answer": "Answer: Option B - IV Ceftriaxone 2g with Dexamethasone",
+        "generated_triplets": "[['Oral Amoxicillin', 'indication', 'Acute Bacterial Meningitis'], ['Oral Amoxicillin', 'carrier', 'Adults'], ['Empirical Pharmacotherapy', 'off-label use', 'Oral Amoxicillin'], ['Acute Bacterial Meningitis', 'carries', 'Empirical Pharmacotherapy'], ['Ceftriaxone 2g', 'used for', 'Treatment of Acute Bacterial Meningitis'], ['Dexamethasone', 'co-administered with', 'Ceftriaxone 2g'], ['Acute Bacterial Meningitis', 'indication', 'Empirical Pharmacotherapy'], ['Adults', 'carrier', 'Suspected Acute Bacterial Meningitis']]",
+        "filtered_triplets": "[['Acute Bacterial Meningitis', 'carries', 'Empirical Pharmacotherapy']]",
+        "review_scores": [
+          0.95
+        ]
       },
-      "hits": 5,
+      "hits": 1,
       "trust": 0.95,
-      "last_accessed_step": 26,
+      "last_accessed_step": 3,
       "created_step": 3
     },
     {
-      "key": "Patient presents with high fever, neck stiffness, and confusion. What is the diagnosis?",
+      "key": "What is the immediate empirical pharmacotherapy for suspected acute bacterial meningitis in adults? A: Oral Amoxicillin B: IV Ceftriaxone 2g with Dexamethasone C: Acetaminophen alone D: Hydrochlorothiazide",
       "value": {
-        "answer": "Based on the symptoms of high fever, neck stiffness, and confusion, I would suspect a diagnosis of Meningitis, specifically Viral Meningitis or Bacterial Meningitis, as these conditions are commonly associated with these symptoms.\n\nHowever, without further diagnostic information such as cerebrospinal fluid analysis, imaging studies, or other clinical indicators, it is difficult to pinpoint the exact cause. But considering the severity and combination of symptoms presented, meningitis should be at the top of the differential diagnosis list.\n\nIt's essential to note that meningitis can be caused by various pathogens, including viruses (such as herpes simplex virus), bacteria (like Neisseria meningitidis or Haemophilus influenzae type b), and less commonly, fungi.",
+        "answer": "{\n    \"Answer\": \"B\"\n}",
         "generated_triplets": "There is no triplets related to input query",
         "filtered_triplets": "[]",
         "review_scores": []
       },
-      "hits": 3,
+      "hits": 1,
       "trust": 0.95,
-      "last_accessed_step": 15,
+      "last_accessed_step": 6,
       "created_step": 6
     },
     {
-      "key": "A 45-year-old male has acute chest pain radiating to left arm. What immediate steps should be taken?",
+      "key": "What is the recommended first-line pharmacological treatment for newly diagnosed Type 2 Diabetes?\nA: Insulin glargine\nB: Metformin combined with lifestyle intervention\nC: Sulfonylurea monotherapy\nD: Furosemide",
       "value": {
-        "answer": "For a patient presenting with acute chest pain radiating to the left arm, the primary concern is potential cardiac involvement, such as an acute myocardial infarction (heart attack). The immediate steps should include:\n\n1. Call emergency services or activate the local emergency system immediately.\n2. Ensure the patient's airway, breathing, and circulation (ABCs) are stable and reassure them that help is on the way.\n\nWhile waiting for medical assistance to arrive, it's essential to remain calm and follow these additional steps:\n \n - If the patient has a pulse oximeter available, check their oxygen saturation levels.\n - If the patient has a blood pressure cuff, take their blood pressure using a manual or automated device.\n - Do not administer any medication unless instructed to do so by emergency medical personnel or a physician.\n\nThe patient should be kept in a comfortable position with their back supported, and any arm discomfort addressed without further injury.",
-        "generated_triplets": "There is no triplets related to input query",
-        "filtered_triplets": "[]",
-        "review_scores": []
+        "answer": "Answer: Option B - Metformin combined with lifestyle intervention",
+        "generated_triplets": "[['Insulin glargine', 'recommended treatment for', 'Type 2 Diabetes'], ['Insulin glargine', 'indications include', 'Type 2 Diabetes management'], ['Type 2 Diabetes', 'treatment goal is to', 'normalize insulin levels'], ['Metformin', 'interacts with', 'Type 2 Diabetes'], ['Metformin', 'associated with', 'lifestyle intervention'], ['Type 2 Diabetes', 'parent-child of', 'newly diagnosed Type 2 Diabetes'], ['Sulfonylurea', 'recommended first-line treatment for', 'Type 2 Diabetes'], ['Metformin', 'recommended first-line treatment for', 'Type 2 Diabetes'], ['Gliclazide', 'indicated for use in Type 2 Diabetes'], ['Metformin', 'recommended first-line pharmacological treatment for newly diagnosed Type 2 Diabetes', 'Type 2 Diabetes'], ['Furosemide', 'contraindication for newly diagnosed Type 2 Diabetes', 'Type 2 Diabetes'], ['Furosemide', 'indication for other conditions such as heart failure or edema but not recommended for Type 2 Diabetes', 'Type 2 Diabetes']]",
+        "filtered_triplets": "[['Insulin glargine', 'recommended treatment for', 'Type 2 Diabetes'], ['Metformin', 'associated with', 'lifestyle intervention']]",
+        "review_scores": [
+          0.95,
+          0.95
+        ]
       },
-      "hits": 3,
+      "hits": 1,
       "trust": 0.95,
-      "last_accessed_step": 11,
+      "last_accessed_step": 9,
       "created_step": 9
     },
     {
-      "key": "what are the symptoms of cold",
+      "key": "For an acute STEMI patient undergoing primary PCI, what antiplatelet therapy is indicated?\nA: Aspirin monotherapy\nB: Dual Antiplatelet Therapy (Aspirin + P2Y12 inhibitor)\nC: Warfarin alone\nD: Heparin without antiplatelets",
       "value": {
-        "answer": "I'm happy to help you with your question! However, I don't have any specific knowledge triplets for this query. As a result, I can only provide general information on common symptoms associated with a cold.\n\nCommon symptoms of a cold include:\n\n* Runny nose and congestion\n* Stuffy or sore throat\n* Sneezing\n* Coughing (usually mild)\n* Fatigue or feeling tired\n* Headache\n* Mild body aches or muscle pains\n* Sore or hoarse voice\n* Loss of appetite\n\nPlease note that these symptoms can vary in severity and duration, and some people may experience additional symptoms. If you're experiencing persistent or severe symptoms, it's always best to consult with a healthcare professional for proper evaluation and treatment.\n\nWould you like more information on how to manage cold symptoms or when to seek medical attention?",
-        "generated_triplets": "There is no triplets related to input query",
-        "filtered_triplets": "[]",
-        "review_scores": []
+        "answer": "Answer: Option B - Dual Antiplatelet Therapy (Aspirin + P2Y12 inhibitor)",
+        "generated_triplets": "[['Aspirin', 'indication', 'Acute STEMI'], ['Aspirin', 'carrier', 'Antiplatelet therapy'], ['Primary PCI', 'linked to', 'Antiplatelet therapy'], ['Antiplatelet therapy', 'indicated for', 'Acute STEMI'], ['Primary PCI', 'often performed with', 'Antiplatelet therapy']]",
+        "filtered_triplets": "[['Aspirin', 'indication', 'Acute STEMI'], ['Primary PCI', 'linked to', 'Antiplatelet therapy'], ['Primary PCI', 'often performed with', 'Antiplatelet therapy']]",
+        "review_scores": [
+          0.95,
+          0.95,
+          0.95
+        ]
       },
-      "hits": 1,
+      "hits": 5,
       "trust": 0.95,
-      "last_accessed_step": 21,
-      "created_step": 21
-    },
-    {
-      "key": "what do you mean by hypertension and what are its symptoms",
-      "value": {
-        "answer": "I'd be happy to help clarify!\n\nHypertension, also known as high blood pressure, is a medical condition in which the blood pressure in the arteries is consistently elevated. Blood pressure is measured in millimeters of mercury (mmHg) and is expressed as two numbers: systolic pressure (the top number) and diastolic pressure (the bottom number).\n\nA normal blood pressure reading is typically less than 120/80 mmHg. Hypertension is defined as a blood pressure reading of 130/80 mmHg or higher.\n\nThe symptoms of hypertension can vary depending on the severity of the condition, but common signs and symptoms include:\n\n* Headaches\n* Dizziness or lightheadedness\n* Nausea or vomiting\n* Fatigue or weakness\n* Chest pain or shortness of breath (in severe cases)\n* Palpitations or irregular heartbeat\n* Swelling in the legs, ankles, or feet\n\nIn some people, hypertension may not cause any noticeable symptoms at all. However, high blood pressure can increase the risk of developing serious health problems, such as heart disease, stroke, and kidney disease.\n\nIt's essential to work with your healthcare provider to manage hypertension through lifestyle changes, medication, or a combination of",
-        "generated_triplets": "There is no triplets related to input query",
-        "filtered_triplets": "[]",
-        "review_scores": []
-      },
-      "hits": 1,
-      "trust": 0.95,
-      "last_accessed_step": 24,
-      "created_step": 24
+      "last_accessed_step": 16,
+      "created_step": 12
     }
   ]
 }

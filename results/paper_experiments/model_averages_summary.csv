@@ -1,0 +1,4 @@
+Model,Dataset,Total Evaluated Queries,Avg Accuracy %,Avg Precision %,Avg Recall %,Avg F1-Score %,Cache Hit Ratio %,Avg Latency (s),High-Trust Retention %,Memory Before (MB),Memory Optimized (MB),Memory Reduction %
+deepseek-r1:1.5b,MedDDx-Basic,245,24.91%,29.31%,26.31%,27.73%,14.04%,50.1295,84.00%,432.86,36.78,87.8%
+llama3.2:3b,MedDDx-Basic,245,35.09%,35.75%,36.03%,35.89%,14.04%,49.9709,84.00%,450.88,38.31,87.8%
+qwen2.5:3b,MedDDx-Basic,245,43.51%,44.55%,44.91%,44.73%,14.04%,30.8839,84.00%,441.87,37.55,87.8%

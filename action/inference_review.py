@@ -30,15 +30,22 @@ Given a triple from a knowledge graph. Each triple consists of a head entity, a 
 
 """
 
-embed_tokenizer = AutoTokenizer.from_pretrained('GanjinZero/UMLSBert_ENG')
-sequence_summary = SequenceSummary(AutoConfig.from_pretrained('GanjinZero/UMLSBert_ENG'))
-bert = AutoModel.from_pretrained('GanjinZero/UMLSBert_ENG')
+try:
+    embed_tokenizer = AutoTokenizer.from_pretrained('GanjinZero/UMLSBert_ENG')
+    sequence_summary = SequenceSummary(AutoConfig.from_pretrained('GanjinZero/UMLSBert_ENG'))
+    bert = AutoModel.from_pretrained('GanjinZero/UMLSBert_ENG')
+except Exception as e:
+    embed_tokenizer = None
+    sequence_summary = None
+    bert = None
 
 set_seed(42)
 
 class ReviewInfer(object):
     def __init__(self, model = None, tokenizer = None, model_weights = None, model_name = None):
         super(ReviewInfer, self).__init__()
+        if bert is None:
+            raise RuntimeError("UMLSBert model is not loaded; falling back to LLM scoring.")
         if model is not None and tokenizer is not None:
             self.tokenizer = tokenizer
             self.tokenizer.pad_token_id = tokenizer.eos_token_id
