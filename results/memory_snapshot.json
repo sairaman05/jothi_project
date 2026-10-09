@@ -2,10 +2,10 @@
   "name": "MedStreamMem",
   "capacity": 50,
   "default_trust": 0.95,
-  "current_step": 16,
-  "total_lookups": 12,
-  "cache_hits": 4,
-  "cache_misses": 8,
+  "current_step": 33,
+  "total_lookups": 26,
+  "cache_hits": 12,
+  "cache_misses": 14,
   "eviction_history": [],
   "entries": [
     {
@@ -18,9 +18,9 @@
           0.95
         ]
       },
-      "hits": 1,
+      "hits": 3,
       "trust": 0.95,
-      "last_accessed_step": 3,
+      "last_accessed_step": 28,
       "created_step": 3
     },
     {
@@ -47,9 +47,9 @@
           0.95
         ]
       },
-      "hits": 1,
+      "hits": 3,
       "trust": 0.95,
-      "last_accessed_step": 9,
+      "last_accessed_step": 23,
       "created_step": 9
     },
     {
@@ -64,10 +64,49 @@
           0.95
         ]
       },
-      "hits": 5,
+      "hits": 7,
       "trust": 0.95,
-      "last_accessed_step": 16,
+      "last_accessed_step": 30,
       "created_step": 12
+    },
+    {
+      "key": "What is the first-line treatment for acute otitis media in children?",
+      "value": {
+        "answer": "The first-line treatment for acute otitis media (AOM) in children typically involves a combination of antibiotics and pain management. The preferred antibiotic for AOM is amoxicillin-clavulanate, which has been shown to be effective in treating bacterial infections caused by Streptococcus pneumoniae, Haemophilus influenzae, and Moraxella catarrhalis.\n\nAdditionally, acetaminophen or ibuprofen may be used to manage pain and reduce fever. It is essential to note that the use of antibiotics should always be guided by local antimicrobial resistance patterns and under the supervision of a healthcare provider.\n\nIt's also crucial to follow proper diagnostic guidelines, such as the clinical presentation and otoscopic examination, to determine the cause of AOM and ensure appropriate treatment.",
+        "generated_triplets": "There is no triplets related to input query",
+        "filtered_triplets": "[]",
+        "review_scores": []
+      },
+      "hits": 3,
+      "trust": 0.95,
+      "last_accessed_step": 21,
+      "created_step": 19
+    },
+    {
+      "key": "Which genes or proteins are expressed exclusively in the pericardium and not in either the dorsal or ventral regions of the thalamus?\nA: ADH1A\nB: ADH1C\nC: ADH4\nD: ADH1B",
+      "value": {
+        "answer": "Answer: Option B - ADH1C",
+        "generated_triplets": "[['ADH1A', 'expression present', 'pericardium'], ['ADH1A', 'carrier', 'ventral region of thalamus'], ['ADH1A', 'expression absent', 'dorsal region of thalamus'], ['ADH1C', 'expression present', 'pericardium'], ['ADH1C', 'phenotype absent', 'dorsal region of thalamus'], ['ADH1C', 'phenotype absent', 'ventral region of thalamus'], ['ADH4', 'expression present', 'pericardium'], ['ADH4', 'contraindication', 'ventral region thalamus'], ['ADH4', 'associated with', 'dorsal region thalamus'], ['ADH1B', 'expression present', 'pericardium'], ['ADH1B', 'linked to', 'ventral region of thalamus'], ['ADH1B', 'phenotype absent', 'dorsal region of thalamus']]",
+        "filtered_triplets": "[]",
+        "review_scores": []
+      },
+      "hits": 1,
+      "trust": 0.95,
+      "last_accessed_step": 26,
+      "created_step": 26
+    },
+    {
+      "key": "Can raw crushed garlic directly cure bacterial pneumonia within 24 hours?\nA: Yes, it replaces all antibiotics\nB: No, pneumonia requires validated clinical antimicrobial therapy\nC: Only when taken with hot tea\nD: Yes, through lung detox",
+      "value": {
+        "answer": "Answer: Option B - No, pneumonia requires validated clinical antimicrobial therapy",
+        "generated_triplets": "[['Garlic', 'interacts with', 'bacterial pneumonia'], ['Raw garlic', 'phenotype present', 'curing bacterial pneumonia'], ['Crushed garlic', 'expression absent', 'directly curing bacterial pneumonia within 24 hours'], ['raw crushed garlic', 'contraindication', 'bacterial pneumonia'], ['valid antimicrobial therapy', 'indication', 'bacterial pneumonia'], ['pneumonia', 'requirement for treatment', 'validated clinical antimicrobial therapy'], ['Raw Crushed Garlic', 'interacts with', 'Hot Tea'], ['Hot Tea', 'contains', 'Antimicrobial Compounds'], ['Antimicrobial Compounds', 'target', 'Bacterial Pneumonia'], ['Garlic', 'interacts with', 'bacterial pneumonia'], ['Garlic', 'target of treatment for', 'bacterial pneumonia'], ['Lung detoxification', 'associated with', 'removal of bacterial pneumonia pathogens']]",
+        "filtered_triplets": "[]",
+        "review_scores": []
+      },
+      "hits": 1,
+      "trust": 0.95,
+      "last_accessed_step": 33,
+      "created_step": 33
     }
   ]
 }
